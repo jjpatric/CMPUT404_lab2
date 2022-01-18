@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import socket, sys
-import time
+import socket, sys, os
 
 #define address & buffer size
 HOST = ""
@@ -87,16 +86,22 @@ def main():
         while True:
             conn, addr = s.accept()
             print("Connected by", addr)
-            
-            #recieve data, send to google, then googles response
-            full_data = conn.recv(BUFFER_SIZE)
-            print("Received data: ", full_data)
-            google_response = google_proxy(full_data)
-            print("Server is sending response to proxy_client")
-            if google_response:
-                conn.sendall(google_response)
-            conn.close()
 
+            # Fork for part 8
+            newpid = os.fork()
+            if newpid == 0:
+                #recieve data, send to google, then reply with googles response
+                full_data = conn.recv(BUFFER_SIZE)
+                print("Received data: ", full_data)
+                google_response = google_proxy(full_data)
+                print("Server is sending response to proxy_client")
+                if google_response:
+                    conn.sendall(google_response)
+                conn.shutdown(socket.SHUT_RDWR)
+                conn.close()
+                break
+            else:
+                print("Parent lives on")
 
 if __name__ == "__main__":
     main()

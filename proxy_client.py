@@ -68,5 +68,7 @@ def main():
         #always close at the end!
         s.close()
 if __name__ == "__main__":
-    main()
+    # Infinitely run to test forking server
+    while True:
+        main()
 
